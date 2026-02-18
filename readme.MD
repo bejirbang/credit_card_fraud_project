@@ -14,3 +14,5 @@ Make 2 new folders data and models, the following are the structures:
 Empty the models folder, and put the dataset from the kaggle ("fraudTest.csv") into the data/raw just like the structure above.
 
 After that, you can run the program with the command : "python -m streamlit run app.py"
+
+The dashboard haven't finished yet, especially on the app/pages files.
