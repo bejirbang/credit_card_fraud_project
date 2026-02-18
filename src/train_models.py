@@ -3,6 +3,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
+from imblearn.over_sampling import SMOTE
 import joblib
 import os
 from src.preprocessing import preprocess
@@ -21,9 +22,17 @@ def train_all_models(df_model=None):
     X = df_model.drop("is_fraud", axis=1)
     y = df_model["is_fraud"]
 
+    # ===== TRAIN TEST SPLIT =====
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, stratify=y, random_state=42
     )
+
+    # ===== SMOTE (ONLY ON TRAINING DATA) =====
+    smote = SMOTE(random_state=42)
+    X_train_sm, y_train_sm = smote.fit_resample(X_train, y_train)
+
+    print("After SMOTE:")
+    print(y_train_sm.value_counts())
 
     # ===== RANDOM FOREST =====
     rf_model = RandomForestClassifier(
@@ -31,21 +40,26 @@ def train_all_models(df_model=None):
         class_weight="balanced",
         random_state=42
     )
-    rf_model.fit(X_train, y_train)
+    rf_model.fit(X_train_sm, y_train_sm)
+
     os.makedirs("models", exist_ok=True)
     joblib.dump(rf_model, "models/random_forest.pkl")
 
     # ===== LOGISTIC REGRESSION =====
     scaler_log = StandardScaler()
-    X_train_log = scaler_log.fit_transform(X_train)
+
+    X_train_log = scaler_log.fit_transform(X_train_sm)
     X_test_log = scaler_log.transform(X_test)
 
-    log_model = LogisticRegression(class_weight='balanced', max_iter=1000)
-    log_model.fit(X_train_log, y_train)
+    log_model = LogisticRegression(
+        class_weight='balanced',
+        max_iter=1000
+    )
+    log_model.fit(X_train_log, y_train_sm)
 
     joblib.dump(log_model, "models/logistic.pkl")
     joblib.dump(scaler_log, "models/scaler_log.pkl")
 
-    print("Training complete, models saved in 'models/' folder.")
+    print("Training complete with SMOTE, models saved in 'models/' folder.")
 
     return rf_model, log_model, scaler_log
