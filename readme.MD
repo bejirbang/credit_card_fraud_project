@@ -15,4 +15,4 @@ Empty the models folder, and put the dataset from the kaggle ("fraudTest.csv") i
 
 After that, you can run the program with the command : "python -m streamlit run app.py"
 
-The dashboard haven't finished yet, especially on the app/pages files.
+The dashboard haven't finished yet, especially on the app/pages files...
